@@ -1,0 +1,9 @@
+# depslib dependency file v1.0
+1510750944 source:c:\users\ahmet\prolab-3\main.cpp
+	<stdio.h>
+	<stdlib.h>
+	<time.h>
+	<windows.h>
+	<locale.h>
+	<graphics.h>
+

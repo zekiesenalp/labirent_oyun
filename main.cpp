@@ -1,0 +1,919 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <windows.h>
+#include <locale.h>
+#include <graphics.h>
+/*
+Zeki Esenalp - 160202033
+Ahmet Manga - 160202008
+
+Programlama Lab - 3. Proje
+*/
+struct matris{
+int data;
+ struct matris *next;
+};
+typedef struct matris node;
+
+void ekle(node *r,int x);
+
+void bastir(node *r,int n);
+
+int ara(node *r,int index);
+
+int sag_bak(node *r,int index);
+
+int sol_bak(node *r,int index);
+
+int asagi_bak(node *r,int index,int n);
+
+int yukari_bak(node *r,int index,int n);
+
+void sira_ekle(node *r,int x);
+
+void sira_sil(node *r,int aranan,int n);
+
+void sira_bastir(node *r,int n);
+
+void duzenle_bastir(node *r, node *r2, int n);
+
+int son_sira(node *r);
+
+int sira_kontrol(node *r);
+
+int main()
+{
+
+node *root,*sira;
+root = (node*)malloc(sizeof(node));
+root->data = rand()%2;
+root->next = NULL;
+int n,i,j,sag,sol,asagi,yukari,hafiza=0,eski_suan;
+int sayac,secim,hafizaOncesi;
+int suan=0,bitis=0;
+printf("Matris Boyutunu Girin: ");
+scanf("%d",&n);
+srand(time(NULL));
+
+for(i=0;i<(n*n)-1;i++){
+    ekle(root,rand()%2);
+}
+bastir(root,n);
+while(!(suan>0 && suan <= n*n)){
+tekrar:
+printf("Giris Kapisi Secin\n");
+printf("1) (1,1) Noktasi \n");
+printf("2) (1,%d) Noktasi\n",n);
+printf("3) (%d,1) Noktasi\n",n);
+printf("4) (%d,%d) Noktasi\n",n,n);
+
+scanf("%d",&secim);
+switch(secim){
+case 1:
+    i = 1; j=1; break;
+case 2:
+    i= 1; j=n; break;
+case 3:
+    i=n; j=1;
+    break;
+case 4:
+    i=n; j=n; break;
+default:
+    goto tekrar; break;
+}
+suan = (i-1)*n+j;
+}
+while(!(bitis>0 && bitis <= n*n)){
+tekrar_bitis:
+printf("Cikis Kapisi Secin\n");
+if(secim != 1) printf("1) (1,1) Noktasi \n");
+if(secim != 2) printf("2) (1,%d) Noktasi\n",n);
+if(secim != 3) printf("3) (%d,1) Noktasi\n",n);
+if(secim != 4) printf("4) (%d,%d) Noktasi\n",n,n);
+
+scanf("%d",&secim);
+switch(secim){
+case 1:
+    i = 1; j=1; break;
+case 2:
+    i= 1; j=n; break;
+case 3: i=n; j=1; break;
+case 4: i=n; j=n; break;
+default:
+    goto tekrar_bitis; break;
+}
+bitis = (i-1)*n+j;
+}
+sira = (node*)malloc(sizeof(node));
+sira->data = suan;
+sira->next = NULL;
+j=0;
+while(suan != bitis){
+eski_suan = suan;
+j++;
+if(j == 3000 || suan > n*n) break;
+
+            if(suan == 1){
+                    if(sol_bak(root,suan+1) == 0) break;
+                    sag = sag_bak(root,suan);
+                    asagi = asagi_bak(root,suan,n);
+                        if(sag > asagi && (suan+1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                            suan+= 1;
+
+                        }else if(asagi > sag && (suan+n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                            suan+= n;
+
+                        }else if(asagi == sag && sag == 1){
+                            sag = sag_bak(root,suan) + sag_bak(root,suan+1) + asagi_bak(root,suan+1,n);
+                            asagi = asagi_bak(root,suan,n) + asagi_bak(root,suan+n,n) + sag_bak(root,suan+n);
+                                if(sag > asagi && (/*suan+1 <= bitis + ((n/2)*n) ||*/bitis == 1 || bitis == n)){
+                                    if(suan+n != hafizaOncesi && son_sira(sira) != suan+n) hafizaOncesi = suan; hafiza = suan+n;
+
+                                    suan+= 1;
+
+                                }else{
+                                   if(suan+1 != hafizaOncesi && son_sira(sira) != suan+1)  hafizaOncesi = suan; hafiza = suan+1;
+
+                                    suan += n;
+
+                                }
+                            }else{
+
+                                if(hafiza == 0){ break; }else{ suan = hafiza; sira_sil(sira,hafizaOncesi,n); }
+                            }
+
+            }else if(suan == n){
+                    if(sag_bak(root,suan-1) == 0) break;
+                    sol = sol_bak(root,suan);
+                    asagi_bak(root,suan,n);
+                        if(sol > asagi && (suan-1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                            suan -= 1;
+
+                        }else if(asagi > sol && (suan+n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                            suan += n;
+
+                        }else if(sol == asagi && sol == 1){
+
+                            sol = sol_bak(root,suan) + sol_bak(root,suan-1) + asagi_bak(root,suan-1,n);
+                            asagi = asagi_bak(root,suan,n) + sol_bak(root,suan+n) + asagi_bak(root,suan+n,n);
+                                if(sol >= asagi && (suan-1 <= bitis + ((n/2)*n) || bitis == 1)){
+                                    if(suan+n != hafizaOncesi && son_sira(sira) != suan+n) hafizaOncesi = suan; hafiza = suan+n;
+
+                                    suan -= 1;
+
+                                }else{
+                                   if(suan-1 != hafizaOncesi && son_sira(sira) != suan-1)  hafizaOncesi = suan; hafiza = suan-1;
+
+                                    suan += n;
+
+                                }
+
+                        }else{
+
+                            if(hafiza == 0){ break; }else{ suan = hafiza; sira_sil(sira,hafizaOncesi,n); }
+                        }
+            }else if(suan == ((n-1)*n) + 1){
+                    if(sol_bak(root,suan+1) == 0) break;
+                    yukari = yukari_bak(root,suan,n);
+                    sag = sag_bak(root,suan);
+                        if(yukari > sag && (suan-n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                            suan-= n;
+
+                        }else if(sag > yukari && (suan+1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                            suan += 1;
+
+                        }else if(sag == yukari && sag == 1){
+                                if(bitis == 1){
+                                    if(suan+1 != hafizaOncesi && son_sira(sira) != suan+1) hafizaOncesi = suan; hafiza = suan+1;
+
+                                    suan -= n;
+
+                                }else if(bitis == n*n){
+                                    if(suan-n != hafizaOncesi && son_sira(sira) != suan-n) hafizaOncesi = suan; hafiza = suan-n;
+
+                                    suan += 1;
+
+                                }else{
+                                    sag = sag_bak(root,suan) + sag_bak(root,suan+1) + yukari_bak(root,suan+1,n);
+                                    yukari = yukari_bak(root,suan,n) + yukari_bak(root,suan-n,n) + sag_bak(root,suan-n);
+                                    if(sag > yukari){
+                                        if(suan-n != hafizaOncesi && son_sira(sira) != suan-n) hafizaOncesi = suan; hafiza = suan-n;
+
+                                        suan += 1;
+                                    }else{
+                                        if(suan+1 != hafizaOncesi && son_sira(sira) != suan+1) hafizaOncesi = suan; hafiza = suan+1;
+
+                                        suan-=n;
+                                    }
+
+                                }
+                        }else{
+
+                            if(hafiza == 0){ break; }else{ suan = hafiza; sira_sil(sira,hafizaOncesi,n); }
+
+                        }
+            }else if(suan == n*n){
+                 if(sag_bak(root,suan-1) == 0) break;
+                yukari = yukari_bak(root,suan,n);
+                sol = sol_bak(root,suan);
+                        if(yukari > sol && (suan-n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                            suan -= n;
+
+                        }else if(sol > yukari && (suan-1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                            suan -= 1;
+
+                        }else if(sol == yukari && sol == 1){
+                            if(bitis == (n-1)*n+1 || (bitis == 1 && sol_bak(root,suan) == 1 && (sol_bak(root,suan-1) == 1 && yukari_bak(root,suan-1,n) == 1))){
+                                if(suan-n != hafizaOncesi && son_sira(sira) != suan-n) hafizaOncesi = suan; hafiza = suan-n;
+
+                                suan -= 1;
+
+                            }else{
+                               if(suan-1 != hafizaOncesi && son_sira(sira) != suan-1)  hafizaOncesi = suan; hafiza = suan-1;
+
+                                suan -= n;
+
+                            }
+                        }else{
+
+                            if(hafiza == 0){ break; }else{ suan = hafiza; sira_sil(sira,hafizaOncesi,n); }
+
+                        }
+            }else if(suan <= n){
+
+                sag = sag_bak(root,suan);
+                asagi = asagi_bak(root,suan,n);
+                sol = sol_bak(root,suan);
+                if(sag > asagi && (sag > sol || suan+1 != hafizaOncesi && son_sira(sira) != suan +1) && (suan+1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                        suan+=1;
+
+                    }else if(asagi > sag && asagi > sol && (suan+n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                          suan += n;
+
+                    }else if((sol > sag || suan-1 != hafizaOncesi && son_sira(sira) != suan-1) && sol > asagi && (suan-1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                           suan -= 1;
+
+                    }else if(sag == sol && sag > asagi && sag == 1 && (suan+1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && (suan-1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                            if((bitis != 1  || suan-1 == hafizaOncesi || son_sira(sira) == suan-1) && suan+1 != hafizaOncesi && son_sira(sira) != suan+1){
+                                hafizaOncesi = suan; hafiza = suan-1;
+                                suan += 1;
+
+                            }else{
+                                hafizaOncesi = suan; hafiza = suan+1;
+                                suan -= 1;
+
+                            }
+
+                    }else if(sag == asagi && sag > sol && sag == 1  && (suan+1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && (suan+n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                            if((bitis == n  || suan+n == hafizaOncesi || son_sira(sira) == suan+n) && suan+1 != hafizaOncesi && son_sira(sira) != suan+1){
+                                hafizaOncesi = suan; hafiza = suan+n;
+                                suan += 1;
+
+                            }else{
+                                hafizaOncesi = suan; hafiza = suan+1;
+                                suan += n;
+
+                            }
+
+
+                    }else if(sol == asagi && sol > sag && sol == 1 && (suan-1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && (suan+n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                            if((bitis == 1 || suan+n == hafizaOncesi || son_sira(sira) == suan+n) && suan-1 != hafizaOncesi && son_sira(sira) != suan-1){
+                                hafizaOncesi = suan; hafiza = suan+n;
+                                suan -= 1;
+
+                            }else{
+                                hafizaOncesi = suan; hafiza = suan-1;
+                                suan += n;
+
+                            }
+
+                    }else if(sol == 1 && asagi == 1 && sag == 1){
+
+                          if(bitis == n){
+                                hafizaOncesi = suan; hafiza = suan-1;
+                                suan +=1;
+
+                          }else if(bitis == 1){
+                                hafizaOncesi = suan; hafiza = suan+n;
+                                suan -= 1;
+
+                          }else{
+                                sag = sag_bak(root,suan) + sag_bak(root,suan+1) + asagi_bak(root,suan+1,n);
+                                asagi = asagi_bak(root,suan,n) + sag_bak(root,suan+n) + asagi_bak(root,suan+n,n);
+
+                                if(sag > asagi){
+                                hafizaOncesi = suan; hafiza = suan+n;
+                                suan += 1;
+
+                                }else{
+                                hafizaOncesi = suan; hafiza = suan+1;
+                                suan += n;
+
+                                }
+                          }
+
+
+                    }else{
+                         if(hafiza == 0){ break; }else{ suan = hafiza; sira_sil(sira,hafizaOncesi,n); }
+
+                    }
+            }else if(suan%n == 0){
+
+                        asagi = asagi_bak(root,suan,n);
+                        yukari = yukari_bak(root,suan,n);
+                        sol = sol_bak(root,suan);
+                        if(yukari > asagi && yukari > sol && suan-n != hafizaOncesi && son_sira(sira) != suan-n && (suan-n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                        suan-=n;
+
+                    }else if(asagi > yukari && asagi > sol && suan+1 != hafizaOncesi && son_sira(sira) != suan+n && (suan+n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                          suan += n;
+
+                    }else if(sol > yukari && sol > asagi && suan-1 != hafizaOncesi && son_sira(sira) != suan-1 && (suan-1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                           suan -= 1;
+
+                   }else if(yukari == sol && sol == 1 && yukari > asagi && (suan-n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && (suan-1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                                if((bitis == n || bitis == 1  || suan-1 == hafizaOncesi || son_sira(sira) == suan-1) && suan-n != hafizaOncesi && son_sira(sira) != suan-n){
+                                    hafizaOncesi = suan; hafiza = suan-1;
+                                    suan -= n;
+
+                                }else{
+                                    hafizaOncesi = suan; hafiza = suan-n;
+                                    suan -= 1;
+
+                                }
+                    }else if(yukari == asagi && yukari > sol && yukari == 1 && (suan-n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && (suan+n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                                if((bitis == n || bitis == 1  || suan+n == hafizaOncesi || son_sira(sira) == suan+n) && suan-n != hafizaOncesi && son_sira(sira) != suan-n){
+                                    hafizaOncesi = suan; hafiza = suan+n;
+                                    suan -= n;
+
+                                }else{
+                                    hafizaOncesi = suan; hafiza = suan-n;
+                                    suan += n;
+
+                                }
+                    }else if(sol == asagi && sol > yukari && sol == 1 && (suan-1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && (suan+n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                                if((bitis == n*n || bitis == (n-1)*n+1  || suan-1 == hafizaOncesi || son_sira(sira) == suan-1) && suan+n != hafizaOncesi && son_sira(sira) != suan+n){
+                                    hafizaOncesi = suan; hafiza = suan-1;
+                                    suan += n;
+
+                                }else{
+                                    hafizaOncesi = suan; hafiza = suan+n;
+                                    suan -= 1;
+
+                                }
+
+                    }else if(sol == 1 && asagi == 1 && yukari == 1){
+
+                         if((bitis == n || bitis == 1) && suan-n != hafizaOncesi && son_sira(sira) != suan-n){
+                                hafizaOncesi = suan; hafiza = suan-1;
+                                suan -=n;
+
+                          }else if((bitis == n*n || bitis == (n-1)*n+1) && suan+n != hafizaOncesi && son_sira(sira) != suan+n){
+                                hafizaOncesi = suan; hafiza = suan-1;
+                                suan += n;
+
+                          }else{
+                                //if(bitis == 1) hafizaOncesi = suan; hafiza = suan-n; else hafizaOncesi = suan; hafiza = suan+n;
+                                suan -= 1;
+
+                          }
+
+                    }else{
+
+                         if(hafiza == 0){ break; }else{ suan = hafiza; sira_sil(sira,hafizaOncesi,n); }
+                    }
+            }else if((suan-1)%n == 0){
+
+                        asagi = asagi_bak(root,suan,n);
+                        yukari = yukari_bak(root,suan,n);
+                        sag = sag_bak(root,suan);
+                         if(sag > sol && sag > yukari && (suan-n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && suan+1 != hafizaOncesi && son_sira(sira) != suan+1){
+                            suan += 1;
+
+                    }else if(yukari > sol && yukari > sag && (suan-n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && suan-n != hafizaOncesi && son_sira(sira) != suan-n){
+                        suan-=n;
+
+                    }else if(asagi > yukari && asagi > sag && (suan+n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && suan+n != hafizaOncesi && son_sira(sira) != suan+n){
+                          suan += n;
+
+                    }else if(sag == asagi && sag == 1 && sag > yukari && (suan+1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && (suan+n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                            if(((n-1)*n+1 == bitis  || suan+1 == hafizaOncesi || son_sira(sira) == suan+1) && suan+n != hafizaOncesi && son_sira(sira) != suan+n){
+                                hafizaOncesi = suan; hafiza = suan+1;
+                                suan += n;
+
+                            }else{
+                                hafizaOncesi = suan; hafiza = suan+n;
+                                suan += 1;
+
+                            }
+
+                    }else if(sag == yukari && sag  > asagi && sag == 1 && (suan+1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && (suan-n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                                if((bitis == 1 || bitis == n  || suan+1 == hafizaOncesi || son_sira(sira) == suan+1) && suan-n != hafizaOncesi && son_sira(sira) != suan-n){
+                                    hafizaOncesi = suan; hafiza = suan+1;
+                                    suan -= n;
+
+                                }else{
+                                    hafizaOncesi = suan; hafiza = suan-n;
+                                    suan += 1;
+
+                                }
+
+                    }else if(asagi == yukari && asagi > sag && asagi == 1 && (suan+n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && (suan-n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                                if((bitis == 1 || bitis == n  || (bitis == n*n && (sag_bak(root,suan-n)))) && suan-n != hafizaOncesi && son_sira(sira) != suan-n){
+                                    suan -= n;
+
+                                }else{
+                                    suan += n;
+
+                                }
+
+                   }else if(sag == 1 && asagi == 1 && yukari == 1){
+
+                         if(bitis == 1 && suan-n != hafizaOncesi && son_sira(sira) != suan-n){
+                                hafizaOncesi = suan; hafiza = suan+1;
+                                suan -=n;
+
+                          }else if((bitis == (n-1)*n+1 || bitis == n*n) && suan+n != hafizaOncesi && son_sira(sira) != suan+n){
+                                hafizaOncesi = suan; hafiza = suan+1;
+                                suan += n;
+
+                          }else{
+                                suan += 1;
+
+                          }
+
+                    }else{
+
+                         if(hafiza == 0){ break; }else{ suan = hafiza; sira_sil(sira,hafizaOncesi,n); }
+                    }
+            }else if(suan-n < n*n && (suan) > (n-1)*n){
+
+                        sol = sol_bak(root,suan);
+                        yukari = yukari_bak(root,suan,n);
+                        sag = sag_bak(root,suan);
+                        if(yukari > sol && yukari > sag && (suan-n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && suan-n != hafizaOncesi && son_sira(sira) != suan-n){
+                        suan-=n;
+
+                    }else if(sol > yukari && sol > sag && (suan-1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && suan-1 != hafizaOncesi && son_sira(sira) != suan-1){
+                          suan-=1;
+
+                    }else if(sag > yukari && sag > sol && (suan+1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && suan+1 != hafizaOncesi && son_sira(sira) != suan+1){
+                           suan += 1;
+
+
+                    }else if(sag == sol && sag > yukari && sag == 1 && (suan+1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && (suan-1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                                if((bitis == n*n || bitis == n || suan-1 == hafizaOncesi || son_sira(sira) == suan-1) && suan+1 != hafizaOncesi && son_sira(sira) != suan+1){
+                                    suan += 1;
+
+                                }else{
+                                    suan -= 1;
+
+                                }
+
+                    }else if(sag == yukari && sag > sol && sag == 1 && (suan+1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && (suan-n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                                if((bitis == n*n || suan-n == hafizaOncesi || son_sira(sira) == suan-n)  && suan+1 != hafizaOncesi && son_sira(sira) != suan+1){
+                                    hafizaOncesi = suan; hafiza = suan-n;
+                                    suan += 1;
+
+                                }else{
+                                    hafizaOncesi = suan; hafiza = suan+1;
+                                    suan -= n;
+
+                                }
+
+
+                    }else if(sol == yukari && sol > sag && sol == 1 && (suan-1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && (suan-n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                                if((bitis == (n-1)*n+1 || suan-n == hafizaOncesi || son_sira(sira) == suan-n) && suan-1 != hafizaOncesi && son_sira(sira) != suan-1){
+                                    hafizaOncesi = suan; hafiza = suan-n;
+                                    suan -= 1;
+
+                                }else{
+                                    hafizaOncesi = suan; hafiza = suan-1;
+                                    suan -= n;
+
+                                }
+
+                    }else if(sol == 1 && yukari == 1 && sag == 1){
+
+                         if(bitis == n*n){
+                                hafizaOncesi = suan; hafiza = suan-n;
+                                suan +=1;
+
+                          }else if(bitis == (n-1)*n+1){
+                                hafizaOncesi = suan; hafiza = suan-n;
+                                suan -= 1;
+
+                          }else{
+                                if(bitis == 1){
+                                hafizaOncesi = suan; hafiza = suan-1; }else{
+                                    hafizaOncesi = suan; hafiza = suan+1;
+                                }
+                                suan -= n;
+
+                          }
+
+                    }else{
+
+                         if(hafiza == 0){ printf("Yol Bulunamadi! Hafizaya alinan yer yok.\n"); break; }else{ suan = hafiza; sira_sil(sira,hafizaOncesi,n); }
+                    }
+
+            }else{
+
+                sag = sag_bak(root,suan);
+                asagi = asagi_bak(root,suan,n);
+                sol = sol_bak(root,suan);
+                yukari = yukari_bak(root,suan,n);
+               if(sag > asagi && sag > yukari && sag > sol && suan+1 != hafizaOncesi && son_sira(sira) != suan+1 && (suan+1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+
+                    suan += 1;
+
+               }else if(asagi > sag && asagi>sol && asagi>yukari && suan+n != hafizaOncesi && son_sira(sira) != suan+n && (suan+n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+
+                    suan += n;
+
+               }else if(sol > sag && sol > asagi && sol > yukari && suan-1 != hafizaOncesi && son_sira(sira) != suan-1 && (suan-1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+
+                    suan -= 1;
+
+               }else if(yukari>sag && yukari > sol && yukari > asagi && suan-n != hafizaOncesi && son_sira(sira) != suan-n && (suan-n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+
+                    suan -= n;
+
+               }else if(sag == asagi && sag == 1 && sag > sol && sag > yukari && (suan+n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+
+                    sag = sag_bak(root,suan) + yukari_bak(root,suan+1,n) + asagi_bak(root,suan+1,n);
+                    asagi = asagi_bak(root,suan,n) + sol_bak(root,suan+n) + sag_bak(root,suan+n);
+                        if(((sag >= asagi) || bitis == n || bitis == n*n || suan+n == hafizaOncesi || son_sira(sira) == suan+n) && suan+1 != hafizaOncesi && son_sira(sira) != suan+1){
+                            hafizaOncesi = suan; hafiza = suan+n;
+                            suan+= 1;
+
+                        }else{
+                            hafizaOncesi = suan; hafiza = suan+1;
+                            suan += n;
+
+                        }
+               }else if(sag > asagi && sag > sol && sag == yukari && sag == 1 && (suan+1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && (suan-n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                    sag = sag_bak(root,suan) + yukari_bak(root,suan+1,n) + asagi_bak(root,suan+1,n);
+                    yukari = yukari_bak(root,suan,n) + sol_bak(root,suan-n) + sag_bak(root,suan-n);
+
+                        if((bitis == n*n || (bitis == (n-1)*n+1)  || suan-n == hafizaOncesi || son_sira(sira) == suan-n) && suan+1 != hafizaOncesi && son_sira(sira) != suan+1){
+                            hafizaOncesi = suan; hafiza = suan-n;
+                            suan+= 1;
+
+                        }else{
+                            hafizaOncesi = suan; hafiza = suan+1;
+                            suan -= n;
+
+                        }
+               }else if(sag > asagi && sag == sol && sag == 1 && sag > yukari && (suan+1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && (suan-1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                    sag = sag_bak(root,suan) + yukari_bak(root,suan+1,n) + asagi_bak(root,suan+1,n);
+                    sol = sol_bak(root,suan) + yukari_bak(root,suan-1,n) + asagi_bak(root,suan-1,n);
+
+                        if(suan+1 != hafizaOncesi && son_sira(sira) != suan+1 && (son_sira(sira) == suan-1 || bitis == n || bitis == n*n || (sag_bak(root,suan+1) == 1 && (yukari_bak(root,suan+1,n) == 1 || asagi_bak(root,suan+1,n) == 1 || sag_bak(root,suan+1) == 1)))){
+                            hafizaOncesi = suan; hafiza = suan-1;
+                            suan+= 1;
+
+                        }else{
+                            hafizaOncesi = suan; hafiza = suan+1;
+                            suan -= 1;
+
+                        }
+               }else if(sol > sag && sol == yukari && sol == 1 && sol > asagi && (suan-1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && (suan-n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                    sol = sol_bak(root,suan) + yukari_bak(root,suan-1,n) + asagi_bak(root,suan-1,n);
+                    yukari = yukari_bak(root,suan,n) + yukari_bak(root,suan-n,n) + sol_bak(root,suan-n) + sag_bak(root,suan-n);
+
+                     if(suan-n != hafizaOncesi && son_sira(sira) != suan-n && (bitis == 1 || bitis == n || suan-1 == hafizaOncesi || son_sira(sira) == suan-1)){
+                         hafizaOncesi = suan; hafiza = suan-1;
+                        suan -=n;
+
+
+                     }else{
+                        hafizaOncesi = suan; hafiza = suan-n;
+                        suan -= 1;
+
+                     }
+               }else if(sol > sag && sol > yukari && sol == asagi && sol == 1 && (suan-1 <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && (suan+n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                    sol = sol_bak(root,suan) + yukari_bak(root,suan-1,n) + asagi_bak(root,suan-1,n);
+                    asagi = asagi_bak(root,suan,n) + sol_bak(root,suan+n) + sag_bak(root,suan+n);
+
+                     if(suan-1 != hafizaOncesi && son_sira(sira) != suan-1 && (bitis == n || bitis == 1 || suan+n == hafizaOncesi || son_sira(sira) == suan+n)){
+                        hafizaOncesi = suan; hafiza = suan+n;
+                        suan -= 1;
+
+                     }else{
+                        hafizaOncesi = suan; hafiza = suan-1;
+                        suan +=n;
+
+                     }
+               }else if(asagi > sol && asagi > sag && asagi == yukari && asagi == 1 && (suan+n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n) && (suan-n <= bitis + ((n/2)*n) || bitis == 1 || bitis == n)){
+                    yukari = yukari_bak(root,suan,n) + yukari_bak(root,suan-n,n) + sol_bak(root,suan-n) + sag_bak(root,suan-n);
+                    asagi = asagi_bak(root,suan,n) + sol_bak(root,suan+n) + sag_bak(root,suan+n);
+                     if((suan-n != hafizaOncesi && son_sira(sira) != suan-n) && (bitis == 1 || bitis == n  || suan+n == hafizaOncesi || son_sira(sira) == suan+n)){
+                        hafizaOncesi = suan; hafiza = suan+n;
+                        suan -= n;
+
+                     }else{
+                        hafizaOncesi = suan; hafiza = suan-n;
+                        suan +=n;
+
+                     }
+               }else if(sag == 1 && sol == 1 && yukari == 1 && asagi == 1){
+                            if(bitis == 1 && suan-n != hafizaOncesi && son_sira(sira) != suan-n){
+                               hafizaOncesi = suan; hafiza = suan-1; suan-=n;
+                            }else if(bitis == 1 && suan-1 != hafizaOncesi && son_sira(sira) != suan-1){
+                                hafizaOncesi = suan; hafiza = suan-n; suan-=1;
+                            }else if(bitis == n && suan+1 != hafizaOncesi && son_sira(sira) != suan+1){
+                                hafizaOncesi = suan; hafiza = suan-n; suan += 1;
+                            }else if(bitis == n && suan-n != hafizaOncesi && son_sira(sira) != suan-n){
+                                hafizaOncesi = suan; hafiza = suan+1; suan-=n;
+                            }else if(bitis == (n-1)*n+1 && suan+n != hafizaOncesi && son_sira(sira) != suan+n){
+                                hafizaOncesi = suan; hafiza = suan-1; suan+=n;
+                            }else if(bitis == (n-1)*n+1 && suan-1 != hafizaOncesi && son_sira(sira) != suan-1){
+                                hafizaOncesi = suan; hafiza = suan+n; suan-=1;
+                            }else if(bitis == n*n && suan+n != hafizaOncesi && son_sira(sira) != suan+n){
+                                 hafizaOncesi = suan; hafiza = suan+1; suan+=n;
+                            }else{
+                                hafizaOncesi = suan; hafiza = suan+n; suan+=1;
+                            }
+
+               }else if(sag == 1 && sol == 1 && yukari == 1 && asagi == 0){
+                        if(bitis == n && suan-n != hafizaOncesi && son_sira(sira) != suan-n){
+                            hafizaOncesi = suan; hafiza = suan+1;
+                            suan-= n;
+                        }else if(bitis == n && suan+1 != hafizaOncesi && son_sira(sira) != suan+1){
+                            hafizaOncesi = suan; hafiza = suan-1;
+                            suan+= 1;
+                        }else if(bitis == 1 && suan-n != hafizaOncesi && son_sira(sira) != suan-n){
+                            hafizaOncesi = suan; hafiza = suan-1;
+                            suan-=n;
+                        }else if((bitis == 1 || bitis == (n-1)*n+1) && suan-1 != hafizaOncesi && son_sira(sira) != suan-1){
+                            suan-=1;
+                        }else{
+                            if(suan+1 != hafizaOncesi && son_sira(sira) != suan+1){
+                            suan+= 1; hafizaOncesi = suan; hafiza = suan-n;
+                            }else{
+                            suan-= 1; hafizaOncesi = suan; hafiza = suan-n;
+                            }
+
+                        }
+
+               }else if(sag == 1 && sol == 1 && asagi == 1 && yukari == 0){
+                        if((bitis == n*n || bitis == (n-1)*n+1) && suan+n != hafizaOncesi && son_sira(sira) != suan+n){
+                            if(bitis == n*n){
+                            hafizaOncesi = suan; hafiza = suan+1; }else{
+                            hafizaOncesi = suan; hafiza = suan-1;
+                            }
+                            suan += n;
+                        }else if((bitis == 1 || bitis == (n-1)*n+1) && suan-1 != hafizaOncesi && son_sira(sira) != suan-1){
+                            hafizaOncesi = suan; hafiza = suan+1;
+                            suan-= 1;
+                        }else if((bitis == n || bitis == n*n) && suan+1 != hafizaOncesi && son_sira(sira) != suan+1){
+                            suan+= 1;
+                        }else{
+                            if(bitis == 1 && suan+1 != hafizaOncesi && son_sira(sira) != suan+1) suan+=1; else suan-= 1;
+                            /* bitis 1 ise yada bitis n ise.  else kysmy n icin calisir.*/
+                        }
+
+               }else if(sag == 1 && sol == 0 && asagi == 1 && yukari == 1){
+                        if((bitis == n) && suan-n != hafizaOncesi && son_sira(sira) != suan-n){
+                            hafizaOncesi = suan; hafiza = suan+1;
+                            suan -= n;
+                        }else if(bitis == 1 && suan-n != hafizaOncesi && son_sira(sira) != suan-n){
+                                hafizaOncesi = suan; hafiza = suan+1;
+                                suan -= n;
+                        }else if((bitis == n*n || bitis == (n-1)*n+1) && suan+n != hafizaOncesi && son_sira(sira) != suan+n){
+                                hafizaOncesi = suan; hafiza = suan+1;
+                                suan+=n;
+                        }else{
+                                if(bitis == n){
+                                    suan+=1;
+                                }else if((bitis == (n-1)*n+1 || bitis == n*n)){
+                                    suan-=n;
+                                }else if(bitis == 1){
+                                    suan+= n;
+                                }
+                        }
+
+               }else if(sag == 0 && asagi == 1 && yukari == 1 && sol == 1){
+                        if(bitis == n && suan-n != hafizaOncesi && son_sira(sira) != suan-n){
+                            hafizaOncesi = suan; hafiza = suan-1;
+                            suan -= n;
+                        }else if((bitis == n*n || bitis == (n-1)*n+1) && suan+n != hafizaOncesi && son_sira(sira) != suan+n){
+                            hafizaOncesi = suan; hafiza = suan-n;
+                            suan += n;
+                        }else if(bitis == 1){
+                            yukari = yukari_bak(root,suan,n) + sol_bak(root,suan-n) + yukari_bak(root,suan-n,n);
+                            sol = sol_bak(root,suan) + yukari_bak(root,suan-1,n) + sol_bak(root,suan-1);
+                                if(yukari >= sol && suan-n != hafizaOncesi && son_sira(sira) != suan-n){
+                                    hafizaOncesi = suan; hafiza = suan-1;
+                                    suan -=n;
+                                }else{
+                                    hafizaOncesi = suan; hafiza = suan-n;
+                                    suan-=1;
+                                }
+                        }else{
+                                suan += n;
+                        }
+
+               }else{
+                    if(hafiza == 0 || hafiza == NULL){ break; }else{ suan = hafiza; sira_sil(sira,hafizaOncesi,n); }
+               }
+            }
+
+if(eski_suan == suan){
+    printf("Mevcut konum degismedi. Dongu sonlandiriliyor. \n");
+    break;
+}
+if(sira_kontrol(sira) != suan)
+sira_ekle(sira,suan);
+}
+
+if(suan == bitis)
+printf("Yol Bulundu\n");
+else
+printf("Yol Bulunamadi . Gelinen Yer  %d\n",suan);
+printf("\nGezilen yollar : ");
+sira_bastir(sira,n);
+printf("\n");
+duzenle_bastir(root,sira,n);
+
+
+    return 0;
+}
+void ekle(node *r,int x){
+    while(r->next != NULL){
+        r = r->next;
+    }
+    r->next = (node*)malloc(sizeof(node));
+    r->next->data = x;
+    r->next->next = NULL;
+}
+void bastir(node *r,int n){
+    int i=0;
+    while(r != NULL){
+        printf("%d ",r->data);
+        r = r->next;
+        i++;
+        if((i)%n == 0) printf("\n");
+    }
+}
+int ara(node *r,int index){
+    int i;
+    for(i=0;i<index-1;i++){
+        r = r->next;
+    }
+    return r->data;
+}
+int sag_bak(node *r,int index){
+    int i;
+    for(i=0;i<index;i++){
+        r = r->next;
+    }
+    return r->data;
+}
+int sol_bak(node *r,int index){
+    int i;
+    for(i=0;i<index-2;i++){
+        r = r->next;
+    }
+    return r->data;
+}
+int asagi_bak(node *r,int index,int n){
+    int i;
+    for(i=0;i<index-1+n;i++){
+        r = r->next;
+    }
+    return r->data;
+}
+
+int yukari_bak(node *r,int index,int n){
+    int i;
+    for(i=0;i<index-1-n;i++){
+        r = r->next;
+    }
+    return r->data;
+}
+void sira_ekle(node *r,int x){
+    int flag = 0;
+    while(r->next != NULL){
+        if(r->next->data == x){
+            flag = 1;
+            break;
+        }
+        r = r->next;
+    }
+     if(flag == 0){
+        r->next = (node*)malloc(sizeof(node));
+        r->next->data = x;
+        r->next->next = NULL;
+     }
+}
+void sira_sil(node *r,int aranan,int n){
+
+    int i,j;
+    for(i=0;i<n*n;i++){
+        if(r->next->data == aranan){
+            break;
+        }
+        r = r->next;
+    }
+      printf("Sira sil calisti %d - %d",aranan,i);
+    for(j=0;j<n*n;j++){
+        r = r->next;
+        if(j>= i-1){
+            r->next = NULL;
+        }
+
+    }
+}
+
+void duzenle_bastir(node *r, node *r2, int n){
+    int sol[100],sag[100],ust[100],asagi[100],sayac=0;
+    int i,j,mesafe,genislik=25,yukseklik=25,flag = 0;
+    int gd = DETECT,gm;
+    initgraph(&gd, &gm, "C:\\TC\\BGI");
+    int x= getmaxx()/2;
+    int y= getmaxy()/2;
+      outtextxy(y, 0, "Bulunan Yol:");
+      mesafe = 450/n;
+     node *r3;
+    for(i=1;i<=n*n;i++){
+        flag = 0;
+        r3 = r2;
+        while(r3 != NULL){
+            if(r3->data == i){
+                flag = 1;
+                break;
+            }
+            r3 = r3->next;
+        }
+        if(flag == 1){
+        setfillstyle(1,GREEN);
+        sol[sayac] = genislik;
+        ust[sayac] = yukseklik;
+        sag[sayac] = genislik+mesafe;
+        asagi[sayac] = yukseklik+mesafe;
+        sayac++;
+        }else{ setfillstyle(1,RED);}
+         bar(genislik,yukseklik,genislik+mesafe,yukseklik+mesafe);
+        rectangle(genislik,yukseklik,genislik+mesafe,yukseklik+mesafe);
+
+        genislik += mesafe;
+        if(i%n == 0){
+        yukseklik += mesafe;
+        genislik = 25;
+        }
+        r = r->next;
+
+    }
+    animasyon:
+    for(i=0;i<sayac;i++){
+        setfillstyle(1,WHITE);
+        bar(sol[i],ust[i],sag[i],asagi[i]);
+        rectangle(sol[i],ust[i],sag[i],asagi[i]);
+        delay(300);
+        setfillstyle(1,GREEN);
+        bar(sol[i],ust[i],sag[i],asagi[i]);
+        rectangle(sol[i],ust[i],sag[i],asagi[i]);
+    }
+    goto animasyon;
+    delay(1000000);
+   getchar();
+
+   closegraph();
+
+}
+void sira_bastir(node *r,int n){
+   while(r != NULL){
+    printf("%d->",r->data);
+    r = r->next;
+   }
+
+}
+int son_sira(node *r){
+    node *yedek;
+    yedek = r;
+    int sayi = 0,i;
+    while(yedek->next != NULL){
+        yedek = yedek->next;
+        sayi++;
+    }
+    for(i=0; i<sayi-1; i++){
+        r = r->next;
+    }
+    return r->data;
+}
+int sira_kontrol(node *r){
+    node *yedek;
+    yedek = r;
+    int sayi = 0,i;
+    while(yedek->next != NULL){
+        yedek = yedek->next;
+        sayi++;
+    }
+    for(i=0; i<sayi; i++){
+        r = r->next;
+    }
+    return r->data;
+}
